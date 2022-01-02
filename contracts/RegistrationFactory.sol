@@ -1,11 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
-import "./InsuranceFactory.sol";
 import "./DriverFactory.sol";
-contract RegistrationFactory {
-  event RegistrationAdded(uint registrationId, uint year, string make, string model, string color);
+import "./LicenseFactory.sol";
+import "./InsuranceFactory.sol";
+contract RegistrationFactory is DriverFactory, LicenseFactory, InsuranceFactory {
+
+  event RegistrationAdded(uint driverId, string licenseNumber, string plateNumber);
+  event RegistrationGotten(string plateNumber, uint carYear, string carMake, string carModel, string carColor);
+
+  //maps drivers id to the mapping of a license number to a plate number
+  mapping (uint => mapping(string => string[])) public ownerLicReg;
+
+  //Registrations database
   Registration[] public registrations;
+
   struct Registration {
+    uint driverId;
     string plateNumber;
     uint256 titleId;
     string vin;
@@ -16,39 +26,78 @@ contract RegistrationFactory {
     string model;
     string color;
   }
-  function _setRegistration (
-    uint memory _userId,
-    string memory _licNum,
-    string memory _plateNum,
-    uint memory _titId,
-    string memory _viNum,
-    uint memory expDate,
-    string memory _mk,
-    uint memory _vehicleYear,
-    string memory _type,
-    string memory _carModel,
-    string memory _carColor
-    ) private {
-      require(driverToOwner[_userId] == msg.sender, "Error");
-      require(licenseToOwner[_licNum] == msg.sender, "Must be your license");
-      uint id = registrations.push(Registration(_plateNum, _titId, _viNum, _expDate, _mk, _vehicleYear, _type, _carModel, _carColor));
-      registrationLicenseNum[id] = _licNum;
+
+  function setRegistration(
+    uint _driverId,
+    string memory _licNumber,
+    string memory _plateNumber,
+    uint _titleId,
+    string memory _vin,
+    uint _goodThru,
+    string memory _make,
+    uint _year,
+    string memory _carType,
+    string memory _model,
+    string memory _color
+    ) public {
+      require(driverToOwner[_driverId] == msg.sender, "Not your account");
+      require(licenseToOwner[_licNumber] == msg.sender, "not your license");
+      require(vehicleInsured[_vin] == true, "vehicle not insured");
+      registrations.push(Registration(
+        _driverId,
+        _licNumber,
+        _plateNumber,
+        _titleId,
+        _vin,
+        _goodThru,
+        _make,
+        _year,
+        _carType,
+        _model,
+        _color
+      ));
+      ownerLicReg[_driverId][_licNumber].push(_plateNumber);
+      emit RegistrationAdded(_driverId, _licNumber, _plateNumber);
   }
-  function getRegistration (
-    uint memory _regId
-  ) public {
-    return (
-      registrations[_regId].plateNumber,
-      registrations[_regId].titleId,
-      registrations[_regId].vin,
-      registrations[_regId].goodThru,
-      registrations[_regId].make,
-      registrations[_regId].year,
-      registrations[_regId].carType,
-      registrations[_regId].model,
-      registrations[_regId].color,
-      registrationLicenseNum[_regId]
-    );
+
+  //Gets registration info
+  function _getRegistration(uint _driverId, string memory _plateNumber) internal returns (
+    string storage,
+    uint256,
+    string storage,
+    uint,
+    string storage,
+    uint256,
+    string storage,
+    string storage,
+    string storage
+  )
+  {
+    require(driverToOwner[_driverId] == msg.sender, "Not your account");
+    for (i = 0; i < registrations.length; i++) {
+      if (registrations[i].driverId == _driverId && registration[i].plateNumber == _plateNumber) {
+        return (
+          registrations[i].plateNumber,
+          registrations[i].titleId,
+          registrations[i].vin,
+          registrations[i].goodThru,
+          registrations[i].make,
+          registrations[i].year,
+          registrations[i].carType,
+          registrations[i].model,
+          registrations[i].color
+        );
+      } else {
+        continue;
+      }
+    }
+  }
+
+  //Returns a driver's list of license plates
+  function _getDriverCars(uint _driverId, string _licNum) internal returns (string[]) {
+    require(driverToOwner[_driverId] == msg.sender, "Not your Account");
+    require (licenseToOwner[_licNum] == msg.sender, "Not your license");
+    return ownerLicReg[_driverId][_licNum];
   }
 
 }

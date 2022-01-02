@@ -1,15 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.5.11;
 import "./DriverFactory.sol";
-import "./InsuranceFactory.sol";
-import "./RegistrationFactory.sol";
-import "./InsuranceFactory.sol";
-
 
 contract LicenseFactory is DriverFactory {
-    event LicenseAdded(uint licenseId, string licenseNumber, string cl);
+
+    event LicenseAdded(address walletAddress, uint driverId, string licenseNumber);
+    event LicenseListGotten(address walletAddress, uint driverId, uint licenseCount);
+    event LicenseGotten(address walletAddress, uint driverId, string licenseNumber);
+
+
+    mapping (string => address) public licenseToOwner; //maps license number with addresses
+    // mapping (string => uint) public licenseNumToId; //maps license id in licenses array to licensenumber confirms license existance
+    mapping (address => string[]) public ownerLicensesList; // possible ownership of multiple licenses
+
+    mapping (string => bool) public licenseAdded;
 
     struct License {
+        uint driverId;
         string licenseType;
         string licenseNumber;
         uint issued;
@@ -21,48 +28,61 @@ contract LicenseFactory is DriverFactory {
 
     License[] public licenses;
 
-    function _setLicense (
-        uint _userId,
+    function setLicense(
+        uint _driverId,
         string memory _licType,
         string memory _licNum,
-        string memory _licIssued,
-        uint memory _licExp,
+        uint _licIssued,
+        uint _licExp,
         string memory _licClass,
         string memory _licEnd,
         string memory _licRestr
-    ) private {
-        require(driverToOwner[_userId] == msg.sender, "Not your account");
-        uint id = licenses.push(License(_licType, _licNum, _licIssued, _licExp, _licClass, _licClass, _licEnd, _licRestr)) - 1;
-        licenseNumToId[_licNum] == id;
-        licenseToOwner[_licNum] == msg.sender;
-        ownerLicenses[msg.sender].push(_licNum);
+    ) public {
+        require(driverToOwner[_driverId] == msg.sender, "Not your account");
+        require(licenseAdded[_licNum] != true, "License added already");
+        licenses.push(License(
+            _driverId, _licType, _licNum, _licIssued, _licExp, _licClass, _licEnd, _licRestr)
+        );
+        licenseAdded[_licNum] = true;
+        licenseToOwner[_licNum] = msg.sender;
+        ownerLicensesList[msg.sender].push(_licNum);
+        emit LicenseAdded(msg.sender, _driverId, _licNum);
     }
 
-    function _getLicenses (uint _userId) private returns (string[]) {
-        require(driverToOwner[_userId] == msg.sender, "Error");
-        return ownerLicenses[msg.sender];
+    function _getLicenseList(uint _driverId) internal returns (string[] memory) {
+        require(driverToOwner[_driverId] == msg.sender, "Not your account");
+        emit LicenseListGotten(msg.sender, _driverId, ownerLicensesList[msg.sender].length);
+        return ownerLicensesList[msg.sender];
     }
 
-    function _getLicense (uint _userId, string _licNum) private {
-        require(driverToOwner[_userId] == msg.sender, "Error");
-        uint index = licenseNumToId[_liceNum];
-        string[] licNums = _getLicenses(_userId);
-        for (i = 0; licNums.length - 1; i++) {
-            if (licNums[i] == _licNum) {
+    function _getLicense(uint _driverId, string memory _licNum) private returns (
+        uint,
+        string memory,
+        string memory,
+        uint,
+        uint,
+        string memory,
+        string memory,
+        string memory
+    ){
+        require(driverToOwner[_driverId] == msg.sender, "Not your account");
+        require(licenseToOwner[_licNum] == msg.sender, "Not your license");
+        for (uint i = 0; i < licenses.length; i++) {
+            if (licenses[i].driverId == _driverId) {
                 return (
-                licenses[index].licenseType,
-                licenses[index].licenseNumber,
-                licenses[index].issued,
-                licenses[index].exp,
-                licenses[index].class,
-                licenses[index].end,
-                licenses[index].restr,
+                    licenses[i].driverId,
+                    licenses[i].licenseType,
+                    licenses[i].licenseNumber,
+                    licenses[i].issued,
+                    licenses[i].exp,
+                    licenses[i].cl,
+                    licenses[i].end,
+                    licenses[i].restr
                 );
-                break;
             } else {
                 continue;
             }
         }
+        emit LicenseGotten(msg.sender, _driverId, _licNum);
     }
-
 }
