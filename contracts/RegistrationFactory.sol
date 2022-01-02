@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
-import "./DriverFactory.sol";
-import "./LicenseFactory.sol";
+
 import "./InsuranceFactory.sol";
-contract RegistrationFactory is DriverFactory, LicenseFactory, InsuranceFactory {
+contract RegistrationFactory is InsuranceFactory {
 
   event RegistrationAdded(uint driverId, string licenseNumber, string plateNumber);
   event RegistrationGotten(string plateNumber, uint carYear, string carMake, string carModel, string carColor);
@@ -39,13 +38,11 @@ contract RegistrationFactory is DriverFactory, LicenseFactory, InsuranceFactory 
     string memory _carType,
     string memory _model,
     string memory _color
-    ) public {
+    ) public isInsured(_vin) {
       require(driverToOwner[_driverId] == msg.sender, "Not your account");
       require(licenseToOwner[_licNumber] == msg.sender, "not your license");
-      require(vehicleInsured[_vin] == true, "vehicle not insured");
       registrations.push(Registration(
         _driverId,
-        _licNumber,
         _plateNumber,
         _titleId,
         _vin,
@@ -61,21 +58,22 @@ contract RegistrationFactory is DriverFactory, LicenseFactory, InsuranceFactory 
   }
 
   //Gets registration info
-  function _getRegistration(uint _driverId, string memory _plateNumber) internal returns (
-    string storage,
+  function _getRegistration(uint _driverId, string memory _plateNumber) internal view returns (
+    string memory,
     uint256,
-    string storage,
+    string memory,
     uint,
-    string storage,
+    string memory,
     uint256,
-    string storage,
-    string storage,
-    string storage
+    string memory,
+    string memory,
+    string memory
   )
   {
     require(driverToOwner[_driverId] == msg.sender, "Not your account");
-    for (i = 0; i < registrations.length; i++) {
-      if (registrations[i].driverId == _driverId && registration[i].plateNumber == _plateNumber) {
+    for (uint i = 0; i < registrations.length; i++) {
+      if (registrations[i].driverId == _driverId &&
+        keccak256(abi.encodePacked(registrations[i].plateNumber)) == keccak256(abi.encodePacked(_plateNumber))) {
         return (
           registrations[i].plateNumber,
           registrations[i].titleId,
@@ -94,7 +92,7 @@ contract RegistrationFactory is DriverFactory, LicenseFactory, InsuranceFactory 
   }
 
   //Returns a driver's list of license plates
-  function _getDriverCars(uint _driverId, string _licNum) internal returns (string[]) {
+  function _getDriverCars(uint _driverId, string memory _licNum) internal view returns (string[] memory) {
     require(driverToOwner[_driverId] == msg.sender, "Not your Account");
     require (licenseToOwner[_licNum] == msg.sender, "Not your license");
     return ownerLicReg[_driverId][_licNum];

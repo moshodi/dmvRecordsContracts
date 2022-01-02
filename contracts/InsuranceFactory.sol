@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.5.11;
-import "./DriverFactory.sol";
 import "./LicenseFactory.sol";
 
-contract InsuranceFactory is DriverFactory, LicenseFactory {
+contract InsuranceFactory is LicenseFactory {
 
     Insurance[] public insurances;
 
-    event InsuranceAdded(uint driverId, uint vehicleIdNumber, uint carYear, string carMake, string carModel);
+    event InsuranceAdded(uint driverId, string vehicleIdNumber, uint carYear, string carMake, string carModel);
 
-    mapping (string => address) public insuranceToOwner;
+    //vehicle id number map to wallet address
+    mapping (string => address) public vinToOwner;
+
+
+    //assures vehicle id number is insured
     mapping (string => bool) public vehicleInsured;
 
     struct Insurance {
@@ -21,6 +24,14 @@ contract InsuranceFactory is DriverFactory, LicenseFactory {
         string make;
         string model;
         string vehicleIdNumber;
+    }
+
+    // modifier isInsurance(string memory _vin) {
+    // }
+
+    modifier isInsured(string memory _vin) {
+        require(vehicleInsured[_vin] == true, "Vehicle not insured");
+        _;
     }
 
     function setInsurance(
@@ -35,12 +46,11 @@ contract InsuranceFactory is DriverFactory, LicenseFactory {
         string memory _vehicleIdNumber
     ) public {
         require(driverToOwner[_driverId] == msg.sender, "Not your account");
-        require(licenseToOwner[_licNumber] == msg.sender, "not your license");
-        require(licenseAdded[_licNum] == true, "Not licensed");
-        require(vehicleInsured[_vin] != true, "vehicle already insured");
+        require(licenseToOwner[_licenseNum] == msg.sender, "not your license");
+        require(licenseAdded[_licenseNum] == true, "Not licensed");
+        require(vehicleInsured[_vehicleIdNumber] != true, "vehicle already insured");
         insurances.push(Insurance(
             _driverId,
-            _licenseNum,
             _policyNumber,
             _effectiveDate,
             _expirationDate,
@@ -49,16 +59,24 @@ contract InsuranceFactory is DriverFactory, LicenseFactory {
             _model,
             _vehicleIdNumber
         ));
-        insuranceToOwner[_vehicleIdNumber] = msg.sender;
+        vinToOwner[_vehicleIdNumber] = msg.sender;
         vehicleInsured[_vehicleIdNumber] = true;
         emit InsuranceAdded(_driverId, _vehicleIdNumber, _year, _make, _model);
     }
 
-    function _getInsurance(uint _driverId, string memory _vin) private {
-        require(driverToOwner[_driverId] = msg.sender, "Not your account");
-        require(insuranceToOwner[_vin] = msg.sender, "Not your vehicle");
-        for (i = 0; i < insurances.length; i++) {
-            if (insurances[i].driverId == _driverId && insurances[i].vehicleIdNumber == _vin) {
+    function _getInsurance(uint _driverId, string memory _vin) private isAccount(_driverId) view returns (
+        uint,
+        uint,
+        uint,
+        uint,
+        uint,
+        string memory,
+        string memory,
+        string memory
+    ) {
+        // require insuranceToOwner[_vin] == msg.sender
+        for (uint i = 0; i < insurances.length; i++) {
+            if (keccak256(abi.encodePacked(insurances[i].vehicleIdNumber)) == keccak256(abi.encodePacked(_vin))) {
                 return (
                     insurances[i].driverId,
                     insurances[i].policyNumber,

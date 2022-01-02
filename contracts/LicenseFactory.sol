@@ -28,6 +28,13 @@ contract LicenseFactory is DriverFactory {
 
     License[] public licenses;
 
+    modifier isLicensed(uint _driverId, string memory _licNum) {
+        require(driverToOwner[_driverId] == msg.sender, "Not your account");
+        require(licenseAdded[_licNum] == true, "Not licensed");
+        require(licenseToOwner[_licNum] == msg.sender, "Not your license");
+        _;
+    }
+
     function setLicense(
         uint _driverId,
         string memory _licType,

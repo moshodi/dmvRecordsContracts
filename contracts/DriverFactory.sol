@@ -5,7 +5,7 @@ contract DriverFactory {
 
     event DriverSet(
         address walletAddress,
-        uint userId,
+        uint driverId,
         string firstName,
         string middleInitial,
         string lastName,
@@ -45,6 +45,11 @@ contract DriverFactory {
 
     //Driver database
     Driver[] public drivers;
+
+    modifier isAccount(uint _driverId) {
+        require(driverToOwner[_driverId] == msg.sender, "Not your account");
+        _;
+    }
 
     // Create a Driver Account
     function setDriver(
@@ -88,7 +93,7 @@ contract DriverFactory {
         );
     }
     // Get Driver's Account By its unique identifier
-    function _getDriver(uint _userId) internal returns (
+    function _getDriver(uint _driverId) internal returns (
         address,
         string storage,
         string storage,
@@ -101,29 +106,29 @@ contract DriverFactory {
         string storage,
         string storage
     ){
-        require(driverToOwner[_userId] == msg.sender, "Not your account");
+        require(driverToOwner[_driverId] == msg.sender, "Not your account");
         emit DriverGotten(
-            driverToOwner[_userId],
-            _userId,
-            drivers[_userId].firstName,
-            drivers[_userId].middleInitial,
-            drivers[_userId].lastName,
-            drivers[_userId].sex,
-            drivers[_userId].height,
-            drivers[_userId].eyes
+            driverToOwner[_driverId],
+            _driverId,
+            drivers[_driverId].firstName,
+            drivers[_driverId].middleInitial,
+            drivers[_driverId].lastName,
+            drivers[_driverId].sex,
+            drivers[_driverId].height,
+            drivers[_driverId].eyes
         );
         return (
-            driverToOwner[_userId],
-            drivers[_userId].firstName,
-            drivers[_userId].middleInitial,
-            drivers[_userId].lastName,
-            drivers[_userId].sex,
-            drivers[_userId].height,
-            drivers[_userId].eyes,
-            drivers[_userId].addressLineOne,
-            drivers[_userId].city,
-            drivers[_userId].state,
-            drivers[_userId].zip
+            driverToOwner[_driverId],
+            drivers[_driverId].firstName,
+            drivers[_driverId].middleInitial,
+            drivers[_driverId].lastName,
+            drivers[_driverId].sex,
+            drivers[_driverId].height,
+            drivers[_driverId].eyes,
+            drivers[_driverId].addressLineOne,
+            drivers[_driverId].city,
+            drivers[_driverId].state,
+            drivers[_driverId].zip
         );
     }
 }
