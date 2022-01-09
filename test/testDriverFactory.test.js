@@ -27,6 +27,11 @@ contract("DriverFactory", accounts => {
         it("Retrieves a user's account information", async() => {
             const result = await factory.getAccountInfo(0, { from: accounts[0] });
             assert.equal(result.receipt.status, true);
+            assert.equal(result.logs[0].args.userId, 0);
+            assert.equal(result.logs[0].args.walletAddress, accounts[0]);
+            assert.equal(result.logs[0].args.firstName, firstNm);
+            assert.equal(result.logs[0].args.lastName, lastNm);
+            assert.equal(result.logs[0].args.sex, sex);
         })
     })
 

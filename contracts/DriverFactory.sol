@@ -125,7 +125,7 @@ contract DriverFactory {
         );
     }
 
-    function getAccountInfo(uint _driverId) public {
+    function getAccountInfo(uint _driverId) public isAccount(_driverId) {
         getDriverName(_driverId);
         getDriverFeatures(_driverId);
         getDriverAddress(_driverId);
