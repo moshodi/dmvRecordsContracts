@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
-
-import "./InsuranceFactory.sol";
-contract RegistrationFactory is InsuranceFactory {
+import "./LicenseFactory.sol";
+contract RegistrationFactory is LicenseFactory {
 
   event RegistrationAdded(uint driverId, string licenseNumber, string plateNumber);
   event RegistrationGotten(string plateNumber, uint carYear, string carMake, string carModel, string carColor);
@@ -10,21 +9,28 @@ contract RegistrationFactory is InsuranceFactory {
   //maps drivers id to the mapping of a license number to a plate number
   mapping (uint => mapping(string => string[])) public ownerLicReg;
 
-  //Registrations database
-  Registration[] public registrations;
+  //Registrations details database
+  RegistrationDetail[] public registrationDetails;
+  //Registration features database
+  CarFeature[] public carFeatures;
 
-  struct Registration {
+  struct RegistrationDetail {
     uint driverId;
     string plateNumber;
     uint256 titleId;
     string vin;
     uint goodThru;
+  }
+
+  struct CarFeature {
+    uint driverId;
     string make;
     uint256 year;
     string carType;
     string model;
     string color;
   }
+
 
   function setRegistration(
     uint _driverId,
@@ -38,27 +44,17 @@ contract RegistrationFactory is InsuranceFactory {
     string memory _carType,
     string memory _model,
     string memory _color
-    ) public isInsured(_vin) {
+    ) public {
       require(driverToOwner[_driverId] == msg.sender, "Not your account");
       require(licenseToOwner[_licNumber] == msg.sender, "not your license");
-      registrations.push(Registration(
-        _driverId,
-        _plateNumber,
-        _titleId,
-        _vin,
-        _goodThru,
-        _make,
-        _year,
-        _carType,
-        _model,
-        _color
-      ));
+      registrationDetails.push(RegistrationDetail(_driverId, _plateNumber, _titleId, _vin, _goodThru));
+      carFeatures.push(CarFeature(_driverId, _make, _year, _carType, _model, _color));
       ownerLicReg[_driverId][_licNumber].push(_plateNumber);
       emit RegistrationAdded(_driverId, _licNumber, _plateNumber);
   }
 
   //Gets registration info
-  function _getRegistration(uint _driverId, string memory _plateNumber) internal view returns (
+  function _getRegistration(uint _driverId, string memory _plateNumber) internal returns (
     string memory,
     uint256,
     string memory,
@@ -71,24 +67,34 @@ contract RegistrationFactory is InsuranceFactory {
   )
   {
     require(driverToOwner[_driverId] == msg.sender, "Not your account");
-    for (uint i = 0; i < registrations.length; i++) {
-      if (registrations[i].driverId == _driverId &&
-        keccak256(abi.encodePacked(registrations[i].plateNumber)) == keccak256(abi.encodePacked(_plateNumber))) {
+    uint index;
+    for (uint i = 0; i < registrationDetails.length; i++) {
+      if (registrationDetails[i].driverId == _driverId &&
+        keccak256(abi.encodePacked(registrationDetails[i].plateNumber)) == keccak256(abi.encodePacked(_plateNumber))) {
+        uint index = i;
         return (
-          registrations[i].plateNumber,
-          registrations[i].titleId,
-          registrations[i].vin,
-          registrations[i].goodThru,
-          registrations[i].make,
-          registrations[i].year,
-          registrations[i].carType,
-          registrations[i].model,
-          registrations[i].color
+          registrationDetails[i].plateNumber,
+          registrationDetails[i].titleId,
+          registrationDetails[i].vin,
+          registrationDetails[i].goodThru,
+          carFeatures[i].make,
+          carFeatures[i].year,
+          carFeatures[i].carType,
+          carFeatures[i].model,
+          carFeatures[i].color
         );
       } else {
         continue;
       }
     }
+    emit RegistrationGotten(
+      registrationDetails[index].plateNumber,
+      carFeatures[index].year,
+      carFeatures[index].make,
+      carFeatures[index].model,
+      carFeatures[index].color
+    );
+
   }
 
   //Returns a driver's list of license plates

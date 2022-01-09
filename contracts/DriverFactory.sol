@@ -43,8 +43,31 @@ contract DriverFactory {
         string zip;
     }
 
-    //Driver database
-    Driver[] public drivers;
+    struct DriverName {
+        string firstName;
+        string middleInitial;
+        string lastName;
+    }
+
+    struct DriverFeature {
+        string sex;
+        string height;
+        string eyes;
+    }
+
+    struct DriverAddress {
+        string addressLineOne;
+        string city;
+        string state;
+        string zip;
+    }
+
+    //Driver name database
+    DriverName[] public driverNames;
+    //Driver features database
+    DriverFeature[] public driverFeatures;
+    //Driver address database
+    DriverAddress[] public driverAddresses;
 
     modifier isAccount(uint _driverId) {
         require(driverToOwner[_driverId] == msg.sender, "Not your account");
@@ -65,25 +88,14 @@ contract DriverFactory {
         string memory _zip
         ) public {
         require(userAccountsCount[msg.sender] == 0, "Users can only create one profile!");
-        drivers.push(
-            Driver(
-                msg.sender,
-                _first,
-                _midInit,
-                _last,
-                _sx,
-                _ht,
-                _eyeColor,
-                _addressLineOne,
-                _city,
-                _state,
-                _zip
-            )) - 1;
-        driverToOwner[drivers.length - 1] = msg.sender;
+        driverNames.push(DriverName(_first, _midInit, _last));
+        driverFeatures.push(DriverFeature(_sx, _ht, _eyeColor));
+        driverAddresses.push(DriverAddress(_addressLineOne, _city, _state, _zip));
+        driverToOwner[driverNames.length - 1] = msg.sender;
         userAccountsCount[msg.sender]++;
         emit DriverSet(
             msg.sender,
-            drivers.length - 1,
+            driverNames.length - 1,
             _first,
             _midInit,
             _last,
@@ -93,7 +105,7 @@ contract DriverFactory {
         );
     }
     // Get Driver's Account By its unique identifier
-    function _getDriver(uint _driverId) internal returns (
+    function getDriver(uint _driverId) internal returns (
         address,
         string storage,
         string storage,
@@ -110,25 +122,25 @@ contract DriverFactory {
         emit DriverGotten(
             driverToOwner[_driverId],
             _driverId,
-            drivers[_driverId].firstName,
-            drivers[_driverId].middleInitial,
-            drivers[_driverId].lastName,
-            drivers[_driverId].sex,
-            drivers[_driverId].height,
-            drivers[_driverId].eyes
+            driverNames[_driverId].firstName,
+            driverNames[_driverId].middleInitial,
+            driverNames[_driverId].lastName,
+            driverFeatures[_driverId].sex,
+            driverFeatures[_driverId].height,
+            driverFeatures[_driverId].eyes
         );
         return (
             driverToOwner[_driverId],
-            drivers[_driverId].firstName,
-            drivers[_driverId].middleInitial,
-            drivers[_driverId].lastName,
-            drivers[_driverId].sex,
-            drivers[_driverId].height,
-            drivers[_driverId].eyes,
-            drivers[_driverId].addressLineOne,
-            drivers[_driverId].city,
-            drivers[_driverId].state,
-            drivers[_driverId].zip
+            driverNames[_driverId].firstName,
+            driverNames[_driverId].middleInitial,
+            driverNames[_driverId].lastName,
+            driverFeatures[_driverId].sex,
+            driverFeatures[_driverId].height,
+            driverFeatures[_driverId].eyes,
+            driverAddresses[_driverId].addressLineOne,
+            driverAddresses[_driverId].city,
+            driverAddresses[_driverId].state,
+            driverAddresses[_driverId].zip
         );
     }
 }

@@ -1,3 +1,4 @@
-Insurance Factoy--Add a vin verifcation method that connects the getInsurance with the owner
-
 InternalCompilerError: Stack too deep, try using fewer variables.
+    - multiple structs
+
+Insurance is a verifcation tool--maybe an oracle for this not a contract

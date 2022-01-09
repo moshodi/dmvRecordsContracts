@@ -5,7 +5,7 @@ import "./DriverFactory.sol";
 contract LicenseFactory is DriverFactory {
 
     event LicenseAdded(address walletAddress, uint driverId, string licenseNumber);
-    event LicenseListGotten(address walletAddress, uint driverId, uint licenseCount);
+    // event LicenseListGotten(address walletAddress, uint driverId, uint licenseCount);
     event LicenseGotten(address walletAddress, uint driverId, string licenseNumber);
 
 
@@ -56,14 +56,7 @@ contract LicenseFactory is DriverFactory {
         emit LicenseAdded(msg.sender, _driverId, _licNum);
     }
 
-    function _getLicenseList(uint _driverId) internal returns (string[] memory) {
-        require(driverToOwner[_driverId] == msg.sender, "Not your account");
-        emit LicenseListGotten(msg.sender, _driverId, ownerLicensesList[msg.sender].length);
-        return ownerLicensesList[msg.sender];
-    }
-
     function _getLicense(uint _driverId, string memory _licNum) private returns (
-        uint,
         string memory,
         string memory,
         uint,
@@ -77,7 +70,6 @@ contract LicenseFactory is DriverFactory {
         for (uint i = 0; i < licenses.length; i++) {
             if (licenses[i].driverId == _driverId) {
                 return (
-                    licenses[i].driverId,
                     licenses[i].licenseType,
                     licenses[i].licenseNumber,
                     licenses[i].issued,
