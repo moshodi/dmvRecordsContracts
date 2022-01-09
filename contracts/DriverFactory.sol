@@ -29,19 +29,6 @@ contract DriverFactory {
     mapping (address => uint) public userAccountsCount; // assures user only are able to create one account
 
     // mapping (uint => address) public insuranceToOwner;
-    struct Driver {
-        address walletAddress;
-        string firstName;
-        string middleInitial;
-        string lastName;
-        string sex;
-        string height;
-        string eyes;
-        string addressLineOne;
-        string city;
-        string state;
-        string zip;
-    }
 
     struct DriverName {
         string firstName;
@@ -105,20 +92,43 @@ contract DriverFactory {
         );
     }
     // Get Driver's Account By its unique identifier
-    function getDriver(uint _driverId) internal returns (
-        address,
-        string storage,
-        string storage,
-        string storage,
-        string storage,
-        string storage,
-        string storage,
+    function getDriverName(uint _driverId) internal view returns (address, string storage, string storage, string storage) {
+        require(driverToOwner[_driverId] == msg.sender, "Not your account");
+        return (
+            driverToOwner[_driverId],
+            driverNames[_driverId].firstName,
+            driverNames[_driverId].middleInitial,
+            driverNames[_driverId].lastName
+        );
+    }
+
+    function getDriverFeatures(uint _driverId) internal view returns (string storage, string storage, string storage) {
+        require(driverToOwner[_driverId] == msg.sender, "Not your account");
+        return (
+            driverFeatures[_driverId].sex,
+            driverFeatures[_driverId].height,
+            driverFeatures[_driverId].eyes
+        );
+    }
+
+    function getDriverAddress(uint _driverId) internal view returns (
         string storage,
         string storage,
         string storage,
         string storage
-    ){
-        require(driverToOwner[_driverId] == msg.sender, "Not your account");
+    ) {
+        return (
+            driverAddresses[_driverId].addressLineOne,
+            driverAddresses[_driverId].city,
+            driverAddresses[_driverId].state,
+            driverAddresses[_driverId].zip
+        );
+    }
+
+    function getAccountInfo(uint _driverId) public {
+        getDriverName(_driverId);
+        getDriverFeatures(_driverId);
+        getDriverAddress(_driverId);
         emit DriverGotten(
             driverToOwner[_driverId],
             _driverId,
@@ -128,19 +138,6 @@ contract DriverFactory {
             driverFeatures[_driverId].sex,
             driverFeatures[_driverId].height,
             driverFeatures[_driverId].eyes
-        );
-        return (
-            driverToOwner[_driverId],
-            driverNames[_driverId].firstName,
-            driverNames[_driverId].middleInitial,
-            driverNames[_driverId].lastName,
-            driverFeatures[_driverId].sex,
-            driverFeatures[_driverId].height,
-            driverFeatures[_driverId].eyes,
-            driverAddresses[_driverId].addressLineOne,
-            driverAddresses[_driverId].city,
-            driverAddresses[_driverId].state,
-            driverAddresses[_driverId].zip
         );
     }
 }
