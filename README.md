@@ -4,7 +4,7 @@
 These are the smart contracts for a blockchain-based motor vehicle records keeping system.
 
 #### How it Works
-These smart contracts give users the ability to create a driver account. With this account, users have somewhere easily accessible and secure to store their license and registration information. Once their information is set, they have access to their records at all times.  
+These smart contracts give users the ability to create a driver account. With this account, users have somewhere easily accessible and secure to store their license and registration information.
 
 
 #### Stack 
