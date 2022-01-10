@@ -36,7 +36,8 @@ contract DriverFactory {
         string lastName;
     }
 
-    struct DriverFeature {
+    struct DriverDetail {
+        uint dob;
         string sex;
         string height;
         string eyes;
@@ -52,7 +53,7 @@ contract DriverFactory {
     //Driver name database
     DriverName[] public driverNames;
     //Driver features database
-    DriverFeature[] public driverFeatures;
+    DriverDetail[] public driverDetails;
     //Driver address database
     DriverAddress[] public driverAddresses;
 
@@ -66,6 +67,7 @@ contract DriverFactory {
         string memory _first,
         string memory _midInit,
         string memory _last,
+        uint _dob,
         string memory _sx,
         string memory _ht,
         string memory _eyeColor,
@@ -76,7 +78,7 @@ contract DriverFactory {
         ) public {
         require(userAccountsCount[msg.sender] == 0, "Users can only create one profile!");
         driverNames.push(DriverName(_first, _midInit, _last));
-        driverFeatures.push(DriverFeature(_sx, _ht, _eyeColor));
+        driverDetails.push(DriverDetail(_dob, _sx, _ht, _eyeColor));
         driverAddresses.push(DriverAddress(_addressLineOne, _city, _state, _zip));
         driverToOwner[driverNames.length - 1] = msg.sender;
         userAccountsCount[msg.sender]++;
@@ -102,12 +104,13 @@ contract DriverFactory {
         );
     }
 
-    function getDriverFeatures(uint _driverId) internal view returns (string storage, string storage, string storage) {
+    function getDriverDetails(uint _driverId) internal view returns (uint, string storage, string storage, string storage) {
         require(driverToOwner[_driverId] == msg.sender, "Not your account");
         return (
-            driverFeatures[_driverId].sex,
-            driverFeatures[_driverId].height,
-            driverFeatures[_driverId].eyes
+            driverDetails[_driverId].dob,
+            driverDetails[_driverId].sex,
+            driverDetails[_driverId].height,
+            driverDetails[_driverId].eyes
         );
     }
 
@@ -127,7 +130,7 @@ contract DriverFactory {
 
     function getAccountInfo(uint _driverId) public isAccount(_driverId) {
         getDriverName(_driverId);
-        getDriverFeatures(_driverId);
+        getDriverDetails(_driverId);
         getDriverAddress(_driverId);
         emit DriverGotten(
             driverToOwner[_driverId],
@@ -135,9 +138,9 @@ contract DriverFactory {
             driverNames[_driverId].firstName,
             driverNames[_driverId].middleInitial,
             driverNames[_driverId].lastName,
-            driverFeatures[_driverId].sex,
-            driverFeatures[_driverId].height,
-            driverFeatures[_driverId].eyes
+            driverDetails[_driverId].sex,
+            driverDetails[_driverId].height,
+            driverDetails[_driverId].eyes
         );
     }
 }

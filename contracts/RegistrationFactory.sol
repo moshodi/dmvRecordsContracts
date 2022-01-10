@@ -17,7 +17,6 @@ contract RegistrationFactory is LicenseFactory {
   struct RegistrationDetail {
     uint driverId;
     string plateNumber;
-    uint256 titleId;
     string vin;
     uint goodThru;
   }
@@ -36,7 +35,6 @@ contract RegistrationFactory is LicenseFactory {
     uint _driverId,
     string memory _licNumber,
     string memory _plateNumber,
-    uint _titleId,
     string memory _vin,
     uint _goodThru,
     string memory _make,
@@ -47,16 +45,15 @@ contract RegistrationFactory is LicenseFactory {
     ) public {
       require(driverToOwner[_driverId] == msg.sender, "Not your account");
       require(licenseToOwner[_licNumber] == msg.sender, "not your license");
-      registrationDetails.push(RegistrationDetail(_driverId, _plateNumber, _titleId, _vin, _goodThru));
+      registrationDetails.push(RegistrationDetail(_driverId, _plateNumber, _vin, _goodThru));
       carFeatures.push(CarFeature(_driverId, _make, _year, _carType, _model, _color));
       ownerLicReg[_driverId][_licNumber].push(_plateNumber);
       emit RegistrationAdded(_driverId, _licNumber, _plateNumber);
   }
 
   //Gets registration info
-  function _getRegistration(uint _driverId, string memory _plateNumber) internal returns (
+  function getRegistration(uint _driverId, string memory _plateNumber) public returns (
     string memory,
-    uint256,
     string memory,
     uint,
     string memory,
@@ -72,9 +69,15 @@ contract RegistrationFactory is LicenseFactory {
       if (registrationDetails[i].driverId == _driverId &&
         keccak256(abi.encodePacked(registrationDetails[i].plateNumber)) == keccak256(abi.encodePacked(_plateNumber))) {
         uint index = i;
+        emit RegistrationGotten(
+          registrationDetails[index].plateNumber,
+          carFeatures[index].year,
+          carFeatures[index].make,
+          carFeatures[index].model,
+          carFeatures[index].color
+        );
         return (
           registrationDetails[i].plateNumber,
-          registrationDetails[i].titleId,
           registrationDetails[i].vin,
           registrationDetails[i].goodThru,
           carFeatures[i].make,
@@ -87,14 +90,6 @@ contract RegistrationFactory is LicenseFactory {
         continue;
       }
     }
-    emit RegistrationGotten(
-      registrationDetails[index].plateNumber,
-      carFeatures[index].year,
-      carFeatures[index].make,
-      carFeatures[index].model,
-      carFeatures[index].color
-    );
-
   }
 
   //Returns a driver's list of license plates

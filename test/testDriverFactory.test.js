@@ -5,6 +5,7 @@ contract("DriverFactory", accounts => {
     let firstNm = "John";
     let midInit = "A";
     let lastNm = "Smith";
+    let dob = 010522
     let sex = "Male";
     let height = "5 ft 9";
     let eyes = "blk";
@@ -19,7 +20,7 @@ contract("DriverFactory", accounts => {
 
     describe("Creating an account and getting the account information", async() => {
         before("Create driver account using accounts[0]", async() => {
-            await factory.setDriver(firstNm, midInit, lastNm, sex, height, eyes, street, city, state, zip, {
+            await factory.setDriver(firstNm, midInit, lastNm, dob, sex, height, eyes, street, city, state, zip, {
                 from: accounts[0]
             });
         })

@@ -17,7 +17,6 @@ contract LicenseFactory is DriverFactory {
 
     struct License {
         uint driverId;
-        string licenseType;
         string licenseNumber;
         uint issued;
         uint exp;
@@ -37,7 +36,6 @@ contract LicenseFactory is DriverFactory {
 
     function setLicense(
         uint _driverId,
-        string memory _licType,
         string memory _licNum,
         uint _licIssued,
         uint _licExp,
@@ -48,7 +46,7 @@ contract LicenseFactory is DriverFactory {
         require(driverToOwner[_driverId] == msg.sender, "Not your account");
         require(licenseAdded[_licNum] != true, "License added already");
         licenses.push(License(
-            _driverId, _licType, _licNum, _licIssued, _licExp, _licClass, _licEnd, _licRestr)
+            _driverId, _licNum, _licIssued, _licExp, _licClass, _licEnd, _licRestr)
         );
         licenseAdded[_licNum] = true;
         licenseToOwner[_licNum] = msg.sender;
@@ -56,8 +54,7 @@ contract LicenseFactory is DriverFactory {
         emit LicenseAdded(msg.sender, _driverId, _licNum);
     }
 
-    function _getLicense(uint _driverId, string memory _licNum) private returns (
-        string memory,
+    function getLicense(uint _driverId, string memory _licNum) public returns (
         string memory,
         uint,
         uint,
@@ -69,8 +66,8 @@ contract LicenseFactory is DriverFactory {
         require(licenseToOwner[_licNum] == msg.sender, "Not your license");
         for (uint i = 0; i < licenses.length; i++) {
             if (licenses[i].driverId == _driverId) {
+                emit LicenseGotten(msg.sender, _driverId, _licNum);
                 return (
-                    licenses[i].licenseType,
                     licenses[i].licenseNumber,
                     licenses[i].issued,
                     licenses[i].exp,
@@ -82,6 +79,5 @@ contract LicenseFactory is DriverFactory {
                 continue;
             }
         }
-        emit LicenseGotten(msg.sender, _driverId, _licNum);
     }
 }
