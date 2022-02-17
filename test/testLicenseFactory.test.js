@@ -32,29 +32,7 @@ contract("LicenseFactory", accounts => {
 
     describe("Setting and Getting your license information", async() => {
         before("Create driver account using accounts[0]", async() => {
-            await factory.setDriver(firstNm, midInit, lastNm, dob, sex, height, eyes, street, city, state, zip, {
-                from: accounts[0]
-            });
-        })
-
-        it("Allows users to set their license information", async() => {
-            const result = await factory.setLicense(driverId, licenseNum, issued, expired, cl, end, restr, {
-                from: accounts[0]
-            });
-            assert.equal(result.receipt.status, true);
-            assert.equal(result.logs[0].args.driverId, driverId);
-            assert.equal(result.logs[0].args.walletAddress, accounts[0]);
-            assert.equal(result.logs[0].args.licenseNumber, licenseNum);
-        })
-
-        it("Allows users to get their license information", async() => {
-            const getResult = await factory.getLicense(driverId, licenseNum, {
-                from: accounts[0]
-            });
-            assert.equal(getResult.receipt.status, true);
-            assert.equal(getResult.logs[0].args.walletAddress, accounts[0]);
-            assert.equal(getResult.logs[0].args.driverId, driverId);
-            assert.equal(getResult.logs[0].args.licenseNumber, licenseNum);
+            //
         })
     })
 })
